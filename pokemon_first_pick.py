@@ -4,8 +4,6 @@ import streamlit as st
 # import matplotlib.pyplot as plt
 import altair as alt
 
-# 日本語フォント対応
-plt.rcParams['font.family'] = 'Meiryo'
 
 # ---- 関数 ----
 def simulate_hand(deck, hand_size):

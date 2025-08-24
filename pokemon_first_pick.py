@@ -1,6 +1,8 @@
 import numpy as np
+import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
+import altair as alt
 
 # 日本語フォント対応
 plt.rcParams['font.family'] = 'Meiryo'
@@ -96,14 +98,33 @@ if st.button("シミュレーション実行"):
 
     st.metric(label=label_text, value=f"{final_estimated_probability:.4%}")
 
-    # 確率推移グラフ
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(range(1, trials + 1), probabilities, label='推定確率', color='blue')
-    ax.axhline(y=final_estimated_probability, color='red', linestyle='--',
-               label=f'最終確率 ≈ {final_estimated_probability:.4f}')
-    ax.set_xlabel("試行回数")
-    ax.set_ylabel("確率")
-    ax.set_title(f'初手に任意のたねポケモンを引く確率の推移\n_target {target_num}枚 / 全体 {total_basic_pokemon}枚')
-    ax.legend()
-    ax.grid(True)
-    st.pyplot(fig)
+
+
+    # データフレームに変換
+    df = pd.DataFrame({
+        "試行回数": range(1, trials + 1),
+        "推定確率": probabilities
+    })
+
+    # 確率推移ライン
+    line_chart = alt.Chart(df).mark_line(color='blue').encode(
+        x='試行回数',
+        y='推定確率'
+    )
+
+    # 最終確率の赤破線
+    final_line = alt.Chart(pd.DataFrame({"y": [final_estimated_probability]})).mark_rule(
+        color='red', strokeDash=[5,5]
+    ).encode(
+        y='y'
+    )
+
+    # チャートを重ねる
+    chart = alt.layer(line_chart, final_line).properties(
+        width=800,
+        height=400,
+        title=f'初手に任意のたねポケモンを引く確率の推移\n_target {target_num}枚 / 全体 {total_basic_pokemon}枚'
+    )
+
+    st.altair_chart(chart, use_container_width=True)
+
